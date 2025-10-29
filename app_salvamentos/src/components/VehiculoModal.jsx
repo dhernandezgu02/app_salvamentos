@@ -49,7 +49,7 @@ const VehiculoModal = ({ vehiculo, onClose }) => {
 - Motor: ${vehiculo.Motor}
 - Estado: ${vehiculo.Estado}
 - Condición: ${vehiculo.Condicion}`;
-    const telefono = '573134433051'; 
+    const telefono = '573144805382'; 
     window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`, '_blank');
   };
 
