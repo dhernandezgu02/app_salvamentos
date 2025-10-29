@@ -39,4 +39,4 @@ credentials.json
 token.json
 
 # Configuración personalizada de Drive
-src/config/driveConfig.js
+# src/config/driveConfig.js
