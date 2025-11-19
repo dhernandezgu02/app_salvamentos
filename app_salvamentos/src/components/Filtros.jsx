@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
 
-const Filtros = ({ filtros, onFiltrosChange, marcas, transmisiones, combustibles }) => {
+const Filtros = ({ filtros, onFiltrosChange, marcas }) => {
   const handleChange = (campo, valor) => {
     onFiltrosChange({
       ...filtros,
@@ -17,9 +17,6 @@ const Filtros = ({ filtros, onFiltrosChange, marcas, transmisiones, combustibles
       precioMax: '',
       añoMin: '',
       añoMax: '',
-      transmision: '',
-      combustible: '',
-      ordenamiento: 'fecha-desc',
     });
   };
 
@@ -46,26 +43,6 @@ const Filtros = ({ filtros, onFiltrosChange, marcas, transmisiones, combustibles
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
-        </div>
-
-        {/* Ordenamiento */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ordenar por
-          </label>
-          <select
-            value={filtros.ordenamiento}
-            onChange={(e) => handleChange('ordenamiento', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            <option value="fecha-desc">📅 Agregados recientemente</option>
-            <option value="fecha-asc">📅 Más antiguos primero</option>
-            <option value="precio-desc">💰 Precio: Mayor a menor</option>
-            <option value="precio-asc">💰 Precio: Menor a mayor</option>
-            <option value="año-desc">🗓️ Año: Más reciente</option>
-            <option value="año-asc">🗓️ Año: Más antiguo</option>
-            <option value="alfabetico">🔤 Alfabético (A-Z)</option>
-          </select>
         </div>
 
         {/* Marca */}
@@ -141,44 +118,6 @@ const Filtros = ({ filtros, onFiltrosChange, marcas, transmisiones, combustibles
             placeholder="2025"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
-        </div>
-
-        {/* Transmisión */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Transmisión
-          </label>
-          <select
-            value={filtros.transmision}
-            onChange={(e) => handleChange('transmision', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            <option value="">Todas</option>
-            {transmisiones.map((trans) => (
-              <option key={trans} value={trans}>
-                {trans}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Combustible */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Combustible
-          </label>
-          <select
-            value={filtros.combustible}
-            onChange={(e) => handleChange('combustible', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            <option value="">Todos</option>
-            {combustibles.map((comb) => (
-              <option key={comb} value={comb}>
-                {comb}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 

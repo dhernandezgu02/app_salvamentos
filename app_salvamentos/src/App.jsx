@@ -24,9 +24,6 @@ function App() {
     precioMax: '',
     añoMin: '',
     añoMax: '',
-    transmision: '',
-    combustible: '',
-    ordenamiento: 'fecha-desc', // Por defecto ordenar por fecha descendente (más recientes)
   });
 
   // Cargar vehículos al montar el componente
@@ -126,61 +123,15 @@ function App() {
       resultado = resultado.filter((v) => v.Año <= parseInt(filtros.añoMax));
     }
 
-    // Filtro por transmisión
-    if (filtros.transmision) {
-      resultado = resultado.filter((v) => v.Transmision === filtros.transmision);
-    }
-
-    // Filtro por combustible
-    if (filtros.combustible) {
-      resultado = resultado.filter((v) => v.Combustible === filtros.combustible);
-    }
-
-    // Aplicar ordenamiento
-    switch (filtros.ordenamiento) {
-      case 'fecha-desc':
-        resultado.sort((a, b) => {
-          if (a.fechaCreacionDate && b.fechaCreacionDate) {
-            return b.fechaCreacionDate - a.fechaCreacionDate; // Más recientes primero
-          }
-          if (a.fechaCreacionDate && !b.fechaCreacionDate) return -1;
-          if (!a.fechaCreacionDate && b.fechaCreacionDate) return 1;
-          return 0;
-        });
-        break;
-      case 'fecha-asc':
-        resultado.sort((a, b) => {
-          if (a.fechaCreacionDate && b.fechaCreacionDate) {
-            return a.fechaCreacionDate - b.fechaCreacionDate; // Más antiguos primero
-          }
-          if (a.fechaCreacionDate && !b.fechaCreacionDate) return -1;
-          if (!a.fechaCreacionDate && b.fechaCreacionDate) return 1;
-          return 0;
-        });
-        break;
-      case 'precio-desc':
-        resultado.sort((a, b) => b.Precio - a.Precio);
-        break;
-      case 'precio-asc':
-        resultado.sort((a, b) => a.Precio - b.Precio);
-        break;
-      case 'año-desc':
-        resultado.sort((a, b) => b.Año - a.Año);
-        break;
-      case 'año-asc':
-        resultado.sort((a, b) => a.Año - b.Año);
-        break;
-      case 'alfabetico':
-        resultado.sort((a, b) => {
-          const nombreA = `${a.Marca} ${a.Modelo}`.toLowerCase();
-          const nombreB = `${b.Marca} ${b.Modelo}`.toLowerCase();
-          return nombreA.localeCompare(nombreB);
-        });
-        break;
-      default:
-        // Mantener orden original (ya viene ordenado por fecha desde el servicio)
-        break;
-    }
+    // Ordenar por fecha de creación (más recientes primero) - orden por defecto
+    resultado.sort((a, b) => {
+      if (a.fechaCreacionDate && b.fechaCreacionDate) {
+        return b.fechaCreacionDate - a.fechaCreacionDate; // Más recientes primero
+      }
+      if (a.fechaCreacionDate && !b.fechaCreacionDate) return -1;
+      if (!a.fechaCreacionDate && b.fechaCreacionDate) return 1;
+      return 0;
+    });
 
     setVehiculosFiltrados(resultado);
   };
@@ -191,8 +142,6 @@ function App() {
   };
 
   const marcas = obtenerValoresUnicos('Marca');
-  const transmisiones = obtenerValoresUnicos('Transmision');
-  const combustibles = obtenerValoresUnicos('Combustible');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -233,8 +182,6 @@ function App() {
             filtros={filtros}
             onFiltrosChange={setFiltros}
             marcas={marcas}
-            transmisiones={transmisiones}
-            combustibles={combustibles}
           />
           
           <div className="flex justify-end">
@@ -386,8 +333,6 @@ function App() {
                 precioMax: '',
                 añoMin: '',
                 añoMax: '',
-                transmision: '',
-                combustible: '',
               })}
               className="btn-primary"
             >
