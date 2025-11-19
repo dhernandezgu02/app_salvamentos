@@ -19,6 +19,7 @@ const Filtros = ({ filtros, onFiltrosChange, marcas, transmisiones, combustibles
       añoMax: '',
       transmision: '',
       combustible: '',
+      ordenamiento: 'fecha-desc',
     });
   };
 
@@ -45,6 +46,26 @@ const Filtros = ({ filtros, onFiltrosChange, marcas, transmisiones, combustibles
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
+        </div>
+
+        {/* Ordenamiento */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Ordenar por
+          </label>
+          <select
+            value={filtros.ordenamiento}
+            onChange={(e) => handleChange('ordenamiento', e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          >
+            <option value="fecha-desc">📅 Agregados recientemente</option>
+            <option value="fecha-asc">📅 Más antiguos primero</option>
+            <option value="precio-desc">💰 Precio: Mayor a menor</option>
+            <option value="precio-asc">💰 Precio: Menor a mayor</option>
+            <option value="año-desc">🗓️ Año: Más reciente</option>
+            <option value="año-asc">🗓️ Año: Más antiguo</option>
+            <option value="alfabetico">🔤 Alfabético (A-Z)</option>
+          </select>
         </div>
 
         {/* Marca */}

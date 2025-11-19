@@ -4,6 +4,7 @@ import VehiculoCard from './components/VehiculoCard';
 import VehiculoModal from './components/VehiculoModal';
 import VisorImagen from './components/VisorImagen';
 import Filtros from './components/Filtros';
+import CustomSpinner from './components/CustomSpinner';
 import { fetchVehiculos, getConfig } from './services/googleSheets';
 
 const CONFIG = getConfig();
@@ -25,6 +26,7 @@ function App() {
     añoMax: '',
     transmision: '',
     combustible: '',
+    ordenamiento: 'fecha-desc', // Por defecto ordenar por fecha descendente (más recientes)
   });
 
   // Cargar vehículos al montar el componente
@@ -134,6 +136,52 @@ function App() {
       resultado = resultado.filter((v) => v.Combustible === filtros.combustible);
     }
 
+    // Aplicar ordenamiento
+    switch (filtros.ordenamiento) {
+      case 'fecha-desc':
+        resultado.sort((a, b) => {
+          if (a.fechaCreacionDate && b.fechaCreacionDate) {
+            return b.fechaCreacionDate - a.fechaCreacionDate; // Más recientes primero
+          }
+          if (a.fechaCreacionDate && !b.fechaCreacionDate) return -1;
+          if (!a.fechaCreacionDate && b.fechaCreacionDate) return 1;
+          return 0;
+        });
+        break;
+      case 'fecha-asc':
+        resultado.sort((a, b) => {
+          if (a.fechaCreacionDate && b.fechaCreacionDate) {
+            return a.fechaCreacionDate - b.fechaCreacionDate; // Más antiguos primero
+          }
+          if (a.fechaCreacionDate && !b.fechaCreacionDate) return -1;
+          if (!a.fechaCreacionDate && b.fechaCreacionDate) return 1;
+          return 0;
+        });
+        break;
+      case 'precio-desc':
+        resultado.sort((a, b) => b.Precio - a.Precio);
+        break;
+      case 'precio-asc':
+        resultado.sort((a, b) => a.Precio - b.Precio);
+        break;
+      case 'año-desc':
+        resultado.sort((a, b) => b.Año - a.Año);
+        break;
+      case 'año-asc':
+        resultado.sort((a, b) => a.Año - b.Año);
+        break;
+      case 'alfabetico':
+        resultado.sort((a, b) => {
+          const nombreA = `${a.Marca} ${a.Modelo}`.toLowerCase();
+          const nombreB = `${b.Marca} ${b.Modelo}`.toLowerCase();
+          return nombreA.localeCompare(nombreB);
+        });
+        break;
+      default:
+        // Mantener orden original (ya viene ordenado por fecha desde el servicio)
+        break;
+    }
+
     setVehiculosFiltrados(resultado);
   };
 
@@ -203,11 +251,23 @@ function App() {
           </div>
         </div>
 
-        {/* Estado de carga */}
-        {cargando && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-12 h-12 text-primary-600 animate-spin mb-4" />
-            <p className="text-gray-600">Cargando vehículos...</p>
+        {/* Mostrar skeleton cards cuando está cargando por primera vez */}
+        {cargando && vehiculos.length === 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {/* Skeleton cards */}
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+              <div key={item} className="card animate-pulse">
+                <div className="h-64 bg-gray-300"></div>
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-gray-300 rounded"></div>
+                    <div className="h-3 bg-gray-300 rounded w-2/3"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -272,7 +332,7 @@ function App() {
         )}
 
         {/* Contador de resultados */}
-        {!cargando && vehiculosFiltrados.length > 0 && (
+        {vehiculosFiltrados.length > 0 && (
           <div className="mb-6">
             <p className="text-gray-600">
               Mostrando <span className="font-semibold">{vehiculosFiltrados.length}</span>{' '}
@@ -284,7 +344,7 @@ function App() {
         )}
 
         {/* Grid de vehículos */}
-        {!cargando && vehiculosFiltrados.length > 0 && (
+        {vehiculosFiltrados.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             {vehiculosFiltrados.map((vehiculo, index) => (
               <VehiculoCard
@@ -353,6 +413,11 @@ function App() {
           imagenInicial={imagenAmpliada.indiceImagen}
           onClose={() => setImagenAmpliada(null)}
         />
+      )}
+
+      {/* Overlay de carga */}
+      {cargando && (
+        <CustomSpinner message="Cargando vehículos disponibles..." />
       )}
 
       {/* Footer */}

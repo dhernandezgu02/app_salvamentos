@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Phone, Mail, MapPin, ZoomIn, ZoomOut, Maximize, Minimize } from 'lucide-react';
 
 const VehiculoModal = ({ vehiculo, onClose }) => {
   const [imagenActual, setImagenActual] = useState(0);
   const [imagenAmpliada, setImagenAmpliada] = useState(false);
   const [pantallaCompleta, setPantallaCompleta] = useState(false);
+
+  // Resetear estado cuando cambia el vehículo
+  useEffect(() => {
+    setImagenActual(0);
+    setImagenAmpliada(false);
+    setPantallaCompleta(false);
+  }, [vehiculo?.Placa]);
 
   if (!vehiculo) return null;
 
@@ -143,6 +150,7 @@ const VehiculoModal = ({ vehiculo, onClose }) => {
               <>
                 <div className="relative w-full h-full">
                   <iframe
+                    key={`modal-${vehiculo.Placa}-${imagenActual}`}
                     src={vehiculo.imagenes[imagenActual].preview}
                     className="w-full h-full border-0"
                     allow="autoplay"

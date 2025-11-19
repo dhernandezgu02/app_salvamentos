@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Car, Gauge, Fuel, Settings, Calendar, ZoomIn } from 'lucide-react';
 import DRIVE_CONFIG from '../config/driveConfig';
 
 const VehiculoCard = ({ vehiculo, onVerDetalles, onVerImagen }) => {
   const [imagenActual, setImagenActual] = useState(0);
+
+  // Resetear imagen cuando cambia el vehículo
+  useEffect(() => {
+    setImagenActual(0);
+  }, [vehiculo.Placa]);
 
   const formatPrecio = (precio) => {
     return new Intl.NumberFormat('es-CO', {
@@ -29,7 +34,13 @@ const VehiculoCard = ({ vehiculo, onVerDetalles, onVerImagen }) => {
     );
   };
 
-  // Eliminamos logs de depuración
+  // Función para determinar si el vehículo es reciente (últimos 7 días)
+  const esVehiculoReciente = () => {
+    if (!vehiculo.fechaCreacionDate) return false;
+    const ahora = new Date();
+    const diasTranscurridos = (ahora - vehiculo.fechaCreacionDate) / (1000 * 60 * 60 * 24);
+    return diasTranscurridos <= 7; // Últimos 7 días
+  };
 
   return (
     <div className="card group">
@@ -37,18 +48,19 @@ const VehiculoCard = ({ vehiculo, onVerDetalles, onVerImagen }) => {
       <div className="relative h-64 bg-gray-200 overflow-hidden">
         {vehiculo.imagenes && vehiculo.imagenes.length > 0 ? (
           <>
+            {/* Indicador de vehículo reciente */}
+            {esVehiculoReciente() && (
+              <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg z-10">
+                NUEVO
+              </div>
+            )}
             <div className="relative w-full h-full flex items-center justify-center">
               <iframe
+                key={`${vehiculo.Placa}-${imagenActual}`}
                 src={vehiculo.imagenes[imagenActual].preview}
                 title={`${vehiculo.Marca} ${vehiculo.Modelo}`}
                 className="w-full h-full border-0 overflow-hidden"
                 loading="lazy"
-                onError={(e) => {
-                  console.error('Error cargando miniatura:', e.target.src);
-                  e.target.src = 'https://placehold.co/400x300?text=Sin+Imagen';
-                  // Evitar bucles de error
-                  e.target.onerror = null;
-                }}
               />
               
               {/* Botón para ver imagen ampliada */}
@@ -163,6 +175,11 @@ const VehiculoCard = ({ vehiculo, onVerDetalles, onVerImagen }) => {
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
             Condición: {vehiculo.Condicion}
           </span>
+          {vehiculo.fechaCreacionDate && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              Agregado: {vehiculo.fechaCreacionDate.toLocaleDateString('es-CO')}
+            </span>
+          )}
         </div>
 
         {/* Descripción */}

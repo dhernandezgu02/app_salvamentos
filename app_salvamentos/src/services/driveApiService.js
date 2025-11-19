@@ -1,17 +1,24 @@
 /**
- * Carga todas las carpetas hijas de la carpeta principal
+ * Carga todas las carpetas hijas de la carpeta principal ordenadas por fecha de creación
  */
 export const loadAllFolders = async () => {
   if (allFoldersCache) return allFoldersCache;
   if (!CONFIG.API_KEY || !CONFIG.MAIN_FOLDER_ID) return [];
   try {
     const query = encodeURIComponent(`'${CONFIG.MAIN_FOLDER_ID}' in parents and mimeType = 'application/vnd.google-apps.folder'`);
-    const fields = encodeURIComponent('files(id,name)');
-    const url = `${CONFIG.API_BASE_URL}/files?q=${query}&key=${CONFIG.API_KEY}&fields=${fields}`;
+    const fields = encodeURIComponent('files(id,name,createdTime)');
+    const orderBy = 'createdTime desc'; // Más recientes primero
+    const url = `${CONFIG.API_BASE_URL}/files?q=${query}&orderBy=${orderBy}&key=${CONFIG.API_KEY}&fields=${fields}`;
     const response = await fetch(url);
     const data = await response.json();
     if (data.files) {
-      allFoldersCache = data.files;
+      // Agregar información de fecha a cada carpeta
+      allFoldersCache = data.files.map(folder => ({
+        ...folder,
+        createdTime: folder.createdTime,
+        createdDate: new Date(folder.createdTime)
+      }));
+      console.log(`📅 Carpetas ordenadas por fecha de creación (${allFoldersCache.length} encontradas)`);
       return allFoldersCache;
     }
     return [];
@@ -60,13 +67,18 @@ export const findFolderByPlaca = async (placa) => {
   try {
     const placaNormalizada = placa.trim().toUpperCase();
     const query = `name = '${placaNormalizada}' and mimeType = 'application/vnd.google-apps.folder' and '${CONFIG.MAIN_FOLDER_ID}' in parents`;
-    const url = `${CONFIG.API_BASE_URL}/files?q=${encodeURIComponent(query)}&key=${CONFIG.API_KEY}`;
+    const fields = 'files(id,name,createdTime)';
+    const url = `${CONFIG.API_BASE_URL}/files?q=${encodeURIComponent(query)}&key=${CONFIG.API_KEY}&fields=${encodeURIComponent(fields)}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error('Error al buscar la carpeta');
     const data = await response.json();
     if (data.files && data.files.length > 0) {
-      console.log(`✅ Carpeta encontrada para placa ${placa}:`, data.files[0]);
-      return data.files[0];
+      const folder = {
+        ...data.files[0],
+        createdDate: new Date(data.files[0].createdTime)
+      };
+      console.log(`✅ Carpeta encontrada para placa ${placa}:`, folder.name, `(creada: ${folder.createdDate.toLocaleDateString()})`);
+      return folder;
     } else {
       console.warn(`❌ Carpeta NO encontrada para placa ${placa}`);
       return null;
@@ -149,7 +161,7 @@ export const findFolderByName = async (folderName) => {
       `name='${folderName}' and '${CONFIG.MAIN_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder'`
     );
     
-    const fields = encodeURIComponent('files(id,name)');
+    const fields = encodeURIComponent('files(id,name,createdTime)');
     const url = `${CONFIG.API_BASE_URL}/files?q=${query}&key=${CONFIG.API_KEY}&fields=${fields}`;
     
     const response = await fetch(url);

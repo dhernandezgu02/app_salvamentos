@@ -80,8 +80,11 @@ export const fetchVehiculos = async () => {
         vehiculo.Placa = vehiculo.Placa || '';
         vehiculo.Motor = vehiculo.Motor || '';
         
-        // Obtener imágenes según el modo configurado
-        vehiculo.imagenes = await getImagesForVehicle(vehiculo);
+        // Obtener imágenes y fecha de creación según el modo configurado
+        const imageData = await getImagesForVehicle(vehiculo);
+        vehiculo.imagenes = imageData.images;
+        vehiculo.fechaCreacion = imageData.createdTime;
+        vehiculo.fechaCreacionDate = imageData.createdTime ? new Date(imageData.createdTime) : null;
         
         return vehiculo;
       })
@@ -94,7 +97,22 @@ export const fetchVehiculos = async () => {
       throw new Error('No se encontraron vehículos válidos (verifica que tengas datos en Marca y Modelo)');
     }
     
-    return vehiculosValidos;
+    // Ordenar por fecha de creación de carpeta (más recientes primero)
+    const vehiculosOrdenados = vehiculosValidos.sort((a, b) => {
+      // Si ambos tienen fecha, ordenar por fecha
+      if (a.fechaCreacionDate && b.fechaCreacionDate) {
+        return b.fechaCreacionDate - a.fechaCreacionDate; // Más recientes primero
+      }
+      // Si solo uno tiene fecha, el que tiene fecha va primero
+      if (a.fechaCreacionDate && !b.fechaCreacionDate) return -1;
+      if (!a.fechaCreacionDate && b.fechaCreacionDate) return 1;
+      // Si ninguno tiene fecha, mantener orden original
+      return 0;
+    });
+    
+    console.log(`📅 Vehículos ordenados por fecha de creación: ${vehiculosOrdenados.length} vehículos`);
+    
+    return vehiculosOrdenados;
   } catch (error) {
     // Retornar el error para que la UI lo maneje
     throw {
@@ -107,23 +125,30 @@ export const fetchVehiculos = async () => {
 
 /**
  * Obtiene las imágenes para un vehículo según el modo configurado
+ * También obtiene la fecha de creación de la carpeta para ordenamiento
  */
 const getImagesForVehicle = async (vehiculo) => {
   const { Placa } = vehiculo;
   
   try {
     // Buscar carpeta por placa
-    const folder = await driveApiService.findFolderByPlaca(Placa);
-    if (!folder) {
+    const folderInfo = await driveApiService.findFolderByPlaca(Placa);
+    if (!folderInfo) {
       console.warn(`No se encontró carpeta para la placa: ${Placa}`);
-      return [];
+      return { images: [], createdTime: null };
     }
     
     // Obtener imágenes de la carpeta
-    return await driveApiService.getImagesFromFolderId(folder.id);
+    const images = await driveApiService.getImagesFromFolderId(folderInfo.id);
+    
+    return {
+      images,
+      createdTime: folderInfo.createdTime,
+      folderId: folderInfo.id
+    };
   } catch (error) {
     console.error(`Error obteniendo imágenes para placa ${Placa}:`, error);
-    return [];
+    return { images: [], createdTime: null };
   }
 };
 

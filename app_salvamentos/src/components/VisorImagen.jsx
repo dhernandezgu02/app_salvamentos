@@ -44,6 +44,7 @@ const VisorImagen = ({ vehiculo, imagenInicial = 0, onClose }) => {
         
         {/* Vista de imagen según el modo */}
         <iframe
+          key={`visor-${vehiculo.Placa}-${imagenActual}`}
           src={vehiculo.imagenes[imagenActual].preview}
           className={`w-full h-full border-0 ${imagenAmpliada ? 'scale-100' : 'scale-90'}`}
           allow="autoplay"
